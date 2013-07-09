@@ -117,7 +117,7 @@ public class MainActivity extends Activity {
 	private ImageButton xButton;
 	private ImageButton leftButton;
 	private ImageButton rightButton;
-	private ImageButton redButton;
+	private ImageButton oxButton;
 	private ImageButton genButton;
 	private ImageButton warningButton;
 	private ImageView ledOn1;
@@ -200,7 +200,7 @@ public class MainActivity extends Activity {
 	/*
 	 * This is a lookup table to decide how many leds to light up in the ticker
 	 */
-	private float[] LUT = {1, (float)0.7, (float)0.6, (float)0.5, (float)0.4, (float)0.3, (float)0.2, (float)0.1, (float)0.09};
+	private float[] LUT = {2, (float)6, (float)10, (float)20, (float)30, (float)150, (float)700, (float)2000, (float)4000};
 	
 	/*
 	 * Because Android will destroy and re-create things on events like orientation changes,
@@ -228,7 +228,7 @@ public class MainActivity extends Activity {
 
 		// Text to display
 		public String[] sensorNames= {
-				"Reducing Gas"
+				"Oxidizing Gas"
 		};
 		
 		// Another object from the SDHelper library. It helps us set up our pseudo streaming
@@ -242,7 +242,7 @@ public class MainActivity extends Activity {
 		// Our constructor to set up the GUI
 		public Storage(Context context) {
 
-			qsSensor = droneApp.myDrone.QS_TYPE_REDUCING_GAS;
+			qsSensor = droneApp.myDrone.QS_TYPE_OXIDIZING_GAS;
 
 			// This will Blink our Drone, once a second, Blue
 			myBlinker = new ConnectionBlinker(droneApp.myDrone, 1000, 0, 0, 255);
@@ -348,14 +348,15 @@ public class MainActivity extends Activity {
 
 				@Override
 				public void oxidizingGasMeasured(EventObject arg0) {
+					val = droneApp.myDrone.oxidizingGas_Ohm ;
+					
+					tvUpdate(tvSensorValue, String.format("%.0f", val/1000) + " KOhms");
+					streamer.streamHandler.postDelayed(streamer, droneApp.streamingRate);
 				}
 
 				@Override
 				public void reducingGasMeasured(EventObject arg0) {
-					val = droneApp.myDrone.reducingGas_Ohm ;
 					
-					tvUpdate(tvSensorValue, String.format("%.0f", val/1000) + " KOhms");
-					streamer.streamHandler.postDelayed(streamer, droneApp.streamingRate);
 				}
 
 				@Override
@@ -484,6 +485,9 @@ public class MainActivity extends Activity {
 
 				@Override
 				public void oxidizingGasStatus(EventObject arg0) {
+					if (droneApp.myDrone.oxidizingGasStatus) {
+						streamer.run();
+					}
 				}
 
 				@Override
@@ -497,9 +501,7 @@ public class MainActivity extends Activity {
 
 				@Override
 				public void reducingGasStatus(EventObject arg0) {
-					if (droneApp.myDrone.reducingGasStatus) {
-						streamer.run();
-					}
+					
 				}
 
 				@Override
@@ -639,7 +641,7 @@ public class MainActivity extends Activity {
 		popup = new PopupWindow(this);
 		leftButton = (ImageButton)findViewById(R.id.left_button);
 		rightButton = (ImageButton)findViewById(R.id.right_button);
-		redButton = (ImageButton)findViewById(R.id.red_button);
+		oxButton = (ImageButton)findViewById(R.id.ox_button);
 		genButton = (ImageButton)findViewById(R.id.gen_button);
 		warningButton = (ImageButton)findViewById(R.id.warning_button);
 		ledOn1 = (ImageView)findViewById(R.id.led_on1);
@@ -828,10 +830,10 @@ public class MainActivity extends Activity {
 			}	
 		});
 		
-		redButton.setOnClickListener(new OnClickListener() {
+		oxButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				showRedPopup();
+				showOxPopup();
 			}		
 		});	
 		
@@ -953,7 +955,7 @@ public class MainActivity extends Activity {
 			if (on) {
 				if(!inCountdown1Mode) {
 					Intent myIntent = new Intent(getApplicationContext(), GraphActivity.class);
-					myIntent.putExtra("SensorName", "Reducing Gas");
+					myIntent.putExtra("SensorName", "Oxidizing Gas");
 					myIntent.putExtra("quickInt", box.qsSensor);
 					startActivity(myIntent);
 				}
@@ -1015,7 +1017,7 @@ public class MainActivity extends Activity {
 	/**
 	 * Makes informative popup appear
 	 */
-	public void showRedPopup() {
+	public void showOxPopup() {
 		tv_popupTitle.setText(R.string.title1);
 		tv_popupInfo.setText(R.string.description1);
 		
@@ -1252,7 +1254,7 @@ public class MainActivity extends Activity {
 			
 			if(mode == TICKER_MODE) {
 				if(warmedUp) {
-					if(ratio > LUT[1]) {
+					if(ratio < LUT[1]) {
 						ledOn1.setVisibility(View.VISIBLE);
 						ledOn2.setVisibility(View.INVISIBLE);
 						ledOn3.setVisibility(View.INVISIBLE);
@@ -1265,7 +1267,7 @@ public class MainActivity extends Activity {
 						
 						tickFrequency = TICK_FREQ_BASE;
 					}
-					else if((ratio < LUT[1]) && (ratio > LUT[2])) {
+					else if((ratio > LUT[1]) && (ratio < LUT[2])) {
 						ledOn1.setVisibility(View.VISIBLE);
 						ledOn2.setVisibility(View.VISIBLE);
 						ledOn3.setVisibility(View.INVISIBLE);
@@ -1278,7 +1280,7 @@ public class MainActivity extends Activity {
 						
 						tickFrequency = 800;
 					}
-					else if((ratio < LUT[2]) && (ratio > LUT[3])) {
+					else if((ratio > LUT[2]) && (ratio < LUT[3])) {
 						ledOn1.setVisibility(View.VISIBLE);
 						ledOn2.setVisibility(View.VISIBLE);
 						ledOn3.setVisibility(View.VISIBLE);
@@ -1291,7 +1293,7 @@ public class MainActivity extends Activity {
 						
 						tickFrequency = 600;
 					}
-					else if((ratio < LUT[3]) && (ratio > LUT[4])) {
+					else if((ratio > LUT[3]) && (ratio < LUT[4])) {
 						ledOn1.setVisibility(View.VISIBLE);
 						ledOn2.setVisibility(View.VISIBLE);
 						ledOn3.setVisibility(View.VISIBLE);
@@ -1304,7 +1306,7 @@ public class MainActivity extends Activity {
 						
 						tickFrequency = 400;
 					}
-					else if((ratio < LUT[4]) && (ratio > LUT[5])) {
+					else if((ratio > LUT[4]) && (ratio < LUT[5])) {
 						ledOn1.setVisibility(View.VISIBLE);
 						ledOn2.setVisibility(View.VISIBLE);
 						ledOn3.setVisibility(View.VISIBLE);
@@ -1317,7 +1319,7 @@ public class MainActivity extends Activity {
 						
 						tickFrequency = 200;
 					}
-					else if((ratio < LUT[5]) && (ratio > LUT[6])) {
+					else if((ratio > LUT[5]) && (ratio < LUT[6])) {
 						ledOn1.setVisibility(View.VISIBLE);
 						ledOn2.setVisibility(View.VISIBLE);
 						ledOn3.setVisibility(View.VISIBLE);
@@ -1330,7 +1332,7 @@ public class MainActivity extends Activity {
 						
 						tickFrequency = 100;
 					}
-					else if((ratio < LUT[6]) && (ratio > LUT[7])) {
+					else if((ratio > LUT[6]) && (ratio < LUT[7])) {
 						ledOn1.setVisibility(View.VISIBLE);
 						ledOn2.setVisibility(View.VISIBLE);
 						ledOn3.setVisibility(View.VISIBLE);
@@ -1343,7 +1345,7 @@ public class MainActivity extends Activity {
 						
 						tickFrequency = 75;
 					}
-					else if((ratio < LUT[7]) && (ratio > LUT[8])) {
+					else if((ratio > LUT[7]) && (ratio < LUT[8])) {
 						ledOn1.setVisibility(View.VISIBLE);
 						ledOn2.setVisibility(View.VISIBLE);
 						ledOn3.setVisibility(View.VISIBLE);
@@ -1356,7 +1358,7 @@ public class MainActivity extends Activity {
 						
 						tickFrequency = 60;
 					}
-					else if(ratio < LUT[8]) {
+					else if(ratio > LUT[8]) {
 						ledOn1.setVisibility(View.VISIBLE);
 						ledOn2.setVisibility(View.VISIBLE);
 						ledOn3.setVisibility(View.VISIBLE);
@@ -1467,15 +1469,15 @@ public class MainActivity extends Activity {
 		buttonMedOn.setVisibility(View.INVISIBLE);
 		buttonHighOn.setVisibility(View.INVISIBLE);
 		
-		LUT[0] = 1;
-		LUT[1] = (float)0.7;
-		LUT[2] = (float)0.6;
-		LUT[3] = (float)0.5;
-		LUT[4] = (float)0.4;
-		LUT[5] = (float)0.3;
-		LUT[6] = (float)0.2;
-		LUT[7] = (float)0.1;
-		LUT[8] = (float)0.09;
+		LUT[0] = 2;
+		LUT[1] = (float)6;
+		LUT[2] = (float)10;
+		LUT[3] = (float)20;
+		LUT[4] = (float)30;
+		LUT[5] = (float)150;
+		LUT[6] = (float)700;
+		LUT[7] = (float)2000;
+		LUT[8] = (float)4000;
 	}
 	
 	private void setMedSensitivity() {
@@ -1484,14 +1486,14 @@ public class MainActivity extends Activity {
 		buttonHighOn.setVisibility(View.INVISIBLE);
 		
 		LUT[0] = 1;
-		LUT[1] = (float)0.85;
-		LUT[2] = (float)0.8;
-		LUT[3] = (float)0.75;
-		LUT[4] = (float)0.7;
-		LUT[5] = (float)0.65;
-		LUT[6] = (float)0.6;
-		LUT[7] = (float)0.55;
-		LUT[8] = (float)0.545;
+		LUT[1] = (float)3;
+		LUT[2] = (float)5;
+		LUT[3] = (float)10;
+		LUT[4] = (float)15;
+		LUT[5] = (float)75;
+		LUT[6] = (float)350;
+		LUT[7] = (float)1000;
+		LUT[8] = (float)2000;
 	}
 	
 	private void setHighSensitivity() {
@@ -1499,15 +1501,15 @@ public class MainActivity extends Activity {
 		buttonMedOn.setVisibility(View.INVISIBLE);
 		buttonHighOn.setVisibility(View.VISIBLE);
 		
-		LUT[0] = 1;
-		LUT[1] = (float)0.925;
-		LUT[2] = (float)0.9;
-		LUT[3] = (float)0.875;
-		LUT[4] = (float)0.85;
-		LUT[5] = (float)0.825;
-		LUT[6] = (float)0.8;
-		LUT[7] = (float)0.775;
-		LUT[8] = (float)0.7725;
+		LUT[0] = (float)0.5;
+		LUT[1] = (float)1.5;
+		LUT[2] = (float)2.5;
+		LUT[3] = (float)5;
+		LUT[4] = (float)7.5;
+		LUT[5] = (float)37.5;
+		LUT[6] = (float)175;
+		LUT[7] = (float)500;
+		LUT[8] = (float)1000;
 	}
 	
 	/*

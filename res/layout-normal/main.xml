@@ -26,7 +26,7 @@
 	             android:id="@+id/title"
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content"
-	            android:text="Reducing Gas Sensor Monitor   "
+	            android:text="Oxidizing Gas Sensor Monitor   "
 	            android:background="#B0B0B0"
 	            android:textColor="#000000"
 	            android:textSize="12dp" />
@@ -178,7 +178,7 @@
                 android:background="@null"
                 android:maxWidth="75dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/red_button_left" />
+                android:src="@drawable/ox_button_left" />
 
             <ImageButton
                 android:id="@+id/right_button"
@@ -189,7 +189,7 @@
                 android:background="@null"
                 android:maxWidth="75dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/red_button_right" />
+                android:src="@drawable/ox_button_right" />
         </RelativeLayout>
 
         <RelativeLayout
@@ -207,14 +207,14 @@
                 android:layout_centerInParent="true" >
 
                 <ImageButton
-                    android:id="@+id/red_button"
+                    android:id="@+id/ox_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:adjustViewBounds="true"
                     android:background="@null"
                     android:maxWidth="80dp"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/red_button" >
+                    android:src="@drawable/ox_button" >
                 </ImageButton>
 
                 <ImageButton
